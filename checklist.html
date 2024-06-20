@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Checklist</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        .checklist, .week-view {
+            margin: 20px 0;
+        }
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .checklist-item label {
+            margin-left: 10px;
+        }
+        .week-view {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .day {
+            flex: 1;
+            min-width: 120px;
+            margin: 10px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+        .day h3 {
+            margin-top: 0;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-top: 20px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Daily Checklist</h1>
+        <div class="checklist">
+            <div class="checklist-item">
+                <input type="checkbox" id="workout">
+                <label for="workout">Workout</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="water">
+                <label for="water">Drink Enough Water</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="sleep">
+                <label for="sleep">Sleep by 11pm</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="pd">
+                <label for="pd">PD period</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="veges">
+                <label for="veges">Eat veges</label>
+            </div>
+            <button id="saveButton">Save Checklist</button>
+        </div>
+        <div class="week-view" id="weekView">
+            <!-- Week view will be generated here -->
+        </div>
+    </div>
+
+    <script>
+        const checkboxes = document.querySelectorAll('.checklist-item input');
+        const saveButton = document.getElementById('saveButton');
+        const weekView = document.getElementById('weekView');
+        const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const checklistItems = ['workout', 'water', 'sleep', 'pd', 'veges'];
+        
+        function loadChecklist() {
+            const today = new Date().toLocaleDateString();
+            const checklist = JSON.parse(localStorage.getItem(today)) || {};
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = checklist[checkbox.id] || false;
+            });
+        }
+
+        function saveChecklist() {
+            const today = new Date().toLocaleDateString();
+            const checklist = {};
+            checkboxes.forEach(checkbox => {
+                checklist[checkbox.id] = checkbox.checked;
+            });
+            localStorage.setItem(today, JSON.stringify(checklist));
+            renderWeekView();
+        }
+
+        function renderWeekView() {
+            weekView.innerHTML = '';
+            const today = new Date();
+            for (let i = 0; i < 7; i++) {
+                const day = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay() + i);
+                const dateString = day.toLocaleDateString();
+                const checklist = JSON.parse(localStorage.getItem(dateString)) || {};
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'day';
+                dayDiv.innerHTML = `<h3>${daysOfWeek[i]}</h3>`;
+                checklistItems.forEach(item => {
+                    const isChecked = checklist[item] ? 'checked' : '';
+                    dayDiv.innerHTML += `<div><input type="checkbox" ${isChecked} disabled> ${item.charAt(0).toUpperCase() + item.slice(1)}</div>`;
+                });
+                weekView.appendChild(dayDiv);
+            }
+        }
+
+        saveButton.addEventListener('click', saveChecklist);
+
+        window.addEventListener('load', () => {
+            loadChecklist();
+            renderWeekView();
+        });
+    </script>
+</body>
+</html>
